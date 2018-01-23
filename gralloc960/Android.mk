@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ifeq ($(TARGET_PRODUCT),hikey960)
+ifneq (,$(filter $(TARGET_PRODUCT),hikey960 hikey960_car))
 LOCAL_PATH := $(call my-dir)
 
 # Include platform specific makefiles

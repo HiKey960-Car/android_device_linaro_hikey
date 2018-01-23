@@ -22,3 +22,4 @@
 
 add_lunch_combo hikey-userdebug
 add_lunch_combo hikey960-userdebug
+add_lunch_combo hikey960_car-userdebug
