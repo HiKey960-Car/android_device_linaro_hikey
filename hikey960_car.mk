@@ -16,6 +16,12 @@ PRODUCT_PACKAGES += vehicle.default \
 # Build HiKey960 USB audio HAL
 PRODUCT_PACKAGES += audio.usb.hikey960
 
+# Build generic USB GPS HAL
+PRODUCT_PACKAGES += gps.hikey960 \
+        android.hardware.gnss@1.0 \
+        android.hardware.gnss@1.0-impl \
+        android.hardware.gnss@1.0-service
+
 PRODUCT_COPY_FILES += \
     device/generic/car/common/bootanimations/bootanimation-832.zip:system/media/bootanimation.zip \
     device/generic/car/common/android.hardware.dummy.xml:system/etc/permissions/handheld_core_hardware.xml \
@@ -25,6 +31,9 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.type.automotive.xml:system/etc/permissions/android.hardware.type.automotive.xml \
     frameworks/native/data/etc/android.hardware.screen.landscape.xml:system/etc/permissions/android.hardware.screen.landscape.xml
+
+PRODUCT_COPY_FILES += \
+    device/linaro/hikey/usbaudio/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml
 
 #
 # Overrides
