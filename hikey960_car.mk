@@ -1,7 +1,7 @@
 $(call inherit-product, device/linaro/hikey/hikey960.mk)
 
-$(call inherit-product, packages/services/Car/car_product/build/car.mk)
-PRODUCT_PACKAGE_OVERLAYS := packages/services/Car/car_product/overlay
+$(call inherit-product, device/linaro/hikey/car.mk)
+PRODUCT_PACKAGE_OVERLAYS := device/linaro/hikey/overlay_car
 
 PRODUCT_PACKAGES += vehicle.default \
 	CarSettings \
@@ -25,7 +25,6 @@ PRODUCT_PACKAGES += gps.hikey960 \
 PRODUCT_COPY_FILES += \
     device/generic/car/common/bootanimations/bootanimation-832.zip:system/media/bootanimation.zip \
     device/generic/car/common/android.hardware.dummy.xml:system/etc/permissions/handheld_core_hardware.xml \
-    packages/services/Car/car_product/init/init.car.rc:root/init.car.rc \
     packages/services/Car/car_product/init/init.bootstat.rc:root/init.bootstat.rc
 
 PRODUCT_COPY_FILES += \
