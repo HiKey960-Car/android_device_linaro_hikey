@@ -13,6 +13,9 @@ PRODUCT_PACKAGES += vehicle.default \
 	android.hardware.automotive.vehicle@2.0-service \
 	car-radio-service
 
+# Steering wheel interface daemon
+PRODUCT_PACKAGES += swid
+
 # Build HiKey960 USB audio HAL
 PRODUCT_PACKAGES += audio.usb.hikey960
 
