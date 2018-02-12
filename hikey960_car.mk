@@ -11,7 +11,7 @@ PRODUCT_PACKAGES += vehicle.default \
 	tinyhostless \
 	android.hardware.automotive.vehicle@2.0 \
 	android.hardware.automotive.vehicle@2.0-service \
-	car-radio-service
+	android.hardware.broadcastradio@1.1-service.dmhd1000
 
 # Steering wheel interface daemon
 PRODUCT_PACKAGES += \
@@ -47,10 +47,7 @@ PRODUCT_BRAND := Android
 PRODUCT_MODEL := AOSP CAR on hikey960
 
 PRODUCT_PROPERTY_OVERRIDES += \
-    android.car.drawer.unlimited=true \
-    android.car.hvac.demo=true \
-    com.android.car.radio.demo=true \
-    com.android.car.radio.demo.dual=true
+    android.car.drawer.unlimited=true
 
 # Add car related sepolicy.
 BOARD_SEPOLICY_DIRS += \
