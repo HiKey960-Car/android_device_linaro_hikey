@@ -14,7 +14,9 @@ PRODUCT_PACKAGES += vehicle.default \
 	car-radio-service
 
 # Steering wheel interface daemon
-PRODUCT_PACKAGES += swid
+PRODUCT_PACKAGES += \
+		swid \
+		SWIConfig
 
 # Build HiKey960 USB audio HAL
 PRODUCT_PACKAGES += audio.usb.hikey960
