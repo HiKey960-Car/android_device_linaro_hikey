@@ -39,6 +39,9 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     device/linaro/hikey/usbaudio/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml
 
+PRODUCT_COPY_FILES += \
+    device/linaro/hikey/broadcastradio/android.hardware.broadcastradio.xml:system/etc/permissions/android.hardware.broadcastradio.xml
+
 #
 # Overrides
 PRODUCT_NAME := hikey960_car
