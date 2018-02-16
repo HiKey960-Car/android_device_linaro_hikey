@@ -93,7 +93,7 @@ service uim /vendor/bin/uim
 
 service swid /system/bin/swid
     class main
-    user system
+    user root
     group bluetooth
     oneshot
 
