@@ -432,7 +432,7 @@ static int nmea_reader_update_accuracy( NmeaReader*  r,
     if (tok.p >= tok.end)
         return -1;
 
-    r->fix.accuracy = str2float(tok.p, tok.end);
+    r->fix.accuracy = 4 * str2float(tok.p, tok.end);
 
     r->fix.flags   |= GPS_LOCATION_HAS_ACCURACY;
     return 0;
