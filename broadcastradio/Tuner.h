@@ -62,6 +62,8 @@ struct Tuner : public ITuner {
 
     //std::reference_wrapper<HDControl> dmhd1000;
     HDControl dmhd1000;
+    int ptype = -1;
+    unsigned long pfreq;
     bool mIsAmfmConfigSet = false;
     V1_0::BandConfig mAmfmConfig;
     bool mIsTuneCompleted = false;

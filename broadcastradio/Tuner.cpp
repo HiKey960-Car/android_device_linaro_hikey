@@ -94,10 +94,20 @@ Return<Result> Tuner::setConfiguration(const BandConfig& config) {
         mAmfmConfig.antennaConnected = true;
         mCurrentProgram = utils::make_selector(mAmfmConfig.type, mAmfmConfig.lowerLimit);
 
-        if (utils::isFm(mAmfmConfig.type)) {
-            dmhd1000.tune(931, 0, dmhd1000.BAND_FM);
+        if (ptype >= 0){
+            if (ptype == static_cast<uint32_t>(ProgramType::AM)){
+                ALOGD("Tuning AM, sending command to dmhd...");
+                dmhd1000.tune(pfreq, 0, dmhd1000.BAND_AM);
+            } else {
+                ALOGD("Tuning FM, sending command to dmhd...");
+                dmhd1000.tune(pfreq/100, 0, dmhd1000.BAND_FM);
+            }
         } else {
-            dmhd1000.tune(1010, 0, dmhd1000.BAND_AM);
+            if (utils::isFm(mAmfmConfig.type)) {
+                dmhd1000.tune(931, 0, dmhd1000.BAND_FM);
+            } else {
+                dmhd1000.tune(1010, 0, dmhd1000.BAND_AM);
+            }
         }
 	dmhd1000.request_hdsignalstrenth();
 
@@ -249,6 +259,9 @@ Return<Result> Tuner::tuneByProgramSelector(const ProgramSelector& sel) {
     ALOGD("%s(%s)", __func__, toString(sel).c_str());
     lock_guard<mutex> lk(mMut);
     if (mIsClosed) return Result::NOT_INITIALIZED;
+
+    ptype = sel.programType;
+    pfreq = sel.primaryId.value;
 
     // checking if ProgramSelector is valid
     auto programType = utils::getType(sel);
