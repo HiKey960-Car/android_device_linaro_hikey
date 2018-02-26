@@ -19,6 +19,8 @@
 int serial_fd;
 int key_fd;
 int key_client_fd;
+int bl_fd;
+int bl_client_fd;
 int uinput_fd;
 struct uinput_user_dev uidev;
 
@@ -152,7 +154,7 @@ void *key_read(){
 	// forever listen for connections
 	while (1){
 		if ((key_client_fd = accept(key_fd, NULL, NULL)) == -1) {
-			__android_log_print(ANDROID_LOG_ERROR, "SWId", "accept error");
+			__android_log_print(ANDROID_LOG_ERROR, "SWId", "Key accept error");
 			continue;
 		}
 
@@ -160,7 +162,7 @@ void *key_read(){
 		while (1){
 			rc = read(key_client_fd, buf, 1);
 			if (rc <= 0) break;
-printf("Read byte: %c\n", buf[0]);
+printf("Key read byte: %c\n", buf[0]);
 			buf[1] = '\n';
 			buf[2] = 0;
 			write(serial_fd, buf, 2);
@@ -177,6 +179,89 @@ printf("Read byte: %c\n", buf[0]);
 	return 0;
 }
 
+void *bl_read(){
+        int rc;
+        char buf[4];
+	buf[0] = 'B';
+        // forever listen for connections
+        while (1){
+                if ((bl_client_fd = accept(bl_fd, NULL, NULL)) == -1) {
+                        __android_log_print(ANDROID_LOG_ERROR, "SWId", "Backlight accept error");
+                        continue;
+                }
+
+                // forever read the client until the client disconnects.
+                while (1){
+                        rc = read(bl_client_fd, buf+1, 1);
+                        if (rc <= 0) break;
+printf("Backlight read byte: %c\n", buf[1]);
+                        buf[2] = '\n';
+                        buf[3] = 0;
+                        write(serial_fd, buf, 3);
+                }
+                if (rc == -1) {
+                        __android_log_print(ANDROID_LOG_DEBUG, "SWId", "Backlight read error");
+                        close(bl_client_fd);
+                } else if (rc == 0) {
+                        __android_log_print(ANDROID_LOG_DEBUG, "SWId", "Backlight EOF");
+                        close(bl_client_fd);
+                }
+                bl_client_fd = 0;
+        }
+        return 0;
+}
+
+void *temp_read(){
+
+	/*
+	 * Read from /sys/devices/virtual/thermal/thermal_zone0/temp
+	 */
+
+	int lasttemp = 0, curtemp;
+	unsigned char lastpwm = 0x00;
+	unsigned char curpwm = 0x00;
+	char buff[10];
+        char wbuf[4];
+        wbuf[0] = 'T';
+
+	int tempfd = open("/sys/devices/virtual/thermal/thermal_zone0/temp", O_RDONLY);
+	if (tempfd <= 0) return 0;
+	__android_log_print(ANDROID_LOG_DEBUG, "SWId", "Entered thermal monitoring loop");
+	while (1){
+		lseek(tempfd, 0, SEEK_SET);
+		read(tempfd, buff, 6);
+		curtemp = atoi(buff);
+		__android_log_print(ANDROID_LOG_DEBUG, "SWId", "Read temperature: %d", curtemp);
+		if (curtemp > lasttemp){
+			// temperature is increasing
+			if (curtemp >= 65000) curpwm = 0xff; // 100%
+			else if (curtemp >= 60000) curpwm = 0xe5; // 90%
+			else if (curtemp >= 55000) curpwm = 0xcc; // 80%
+			else if (curtemp >= 50000) curpwm = 0xb2; // 70%
+			else if (curtemp >= 45000) curpwm = 0x99; // 60%
+			else if (curtemp >= 40000) curpwm = 0x7f; // 50%
+		} else {
+			// temperature is decreasing
+			if (curtemp < 35000) curpwm = 0x00; // 0%
+			else if (curtemp < 40000) curpwm = 0x7f; // 50%
+			else if (curtemp < 45000) curpwm = 0x99; // 60%
+			else if (curtemp < 50000) curpwm = 0xb2; // 70%
+			else if (curtemp < 55000) curpwm = 0xcc; // 80%
+			else if (curtemp < 60000) curpwm = 0xe5; // 90%
+		}
+		if (curpwm != lastpwm){
+			__android_log_print(ANDROID_LOG_DEBUG, "SWId", "Sending fan update: %02X", curpwm);
+			wbuf[1] = curpwm;
+			wbuf[2] = '\n';
+			write(serial_fd, wbuf, 3);
+			lastpwm = curpwm;
+			lasttemp = curtemp;
+		}
+		sleep(1);
+	}
+	return 0;
+}
+
 int main(){
 	char buf[64];
 	int bufidx, i;
@@ -184,6 +269,8 @@ int main(){
 	char *serialportname = "/dev/ttyAMA3";
 
 	pthread_t key_reader;
+	pthread_t bl_reader;
+	pthread_t temp_reader;
 
 	//daemon(0,0);
 
@@ -205,6 +292,17 @@ int main(){
 
 	if (pthread_create(&key_reader, NULL, key_read, NULL) != 0) return -1;
 	pthread_detach(key_reader);
+
+	bl_fd = create_socket("/dev/backlight");
+
+	system ("/system/bin/chmod 644 /dev/backlight");
+	system ("/system/bin/chown system.system /dev/backlight");
+
+	if (pthread_create(&bl_reader, NULL, bl_read, NULL) != 0) return -1;
+	pthread_detach(bl_reader);
+
+	if (pthread_create(&temp_reader, NULL, temp_read, NULL) != 0) return -1;
+	pthread_detach(temp_reader);
 
 	while (1){
 		bufidx = 0;
