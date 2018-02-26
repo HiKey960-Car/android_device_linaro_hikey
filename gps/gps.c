@@ -962,7 +962,8 @@ gps_state_init( GpsState*  state, GpsCallbacks* callbacks )
     snprintf(device, sizeof(device), "/dev/%s",prop);
     do {
         state->fd = open( device, O_RDWR );
-    } while (state->fd < 0 && errno == EINTR);
+        if (state->fd < 0 && errno == ENOENT) sleep(5);
+    } while (state->fd < 0 && (errno == EINTR || errno == ENOENT));
 
     if (state->fd < 0) {
         ALOGE("could not open gps serial device %s: %s", device, strerror(errno) );
