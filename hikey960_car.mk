@@ -21,6 +21,11 @@ PRODUCT_PACKAGES += \
 # Build HiKey960 USB audio HAL
 PRODUCT_PACKAGES += audio.usb.hikey960
 
+# Build HiKey960 lights HAL
+PRODUCT_PACKAGES += \
+		lights.hikey960 \
+		android.hardware.light@2.0-impl
+
 # Build generic USB GPS HAL
 PRODUCT_PACKAGES += gps.hikey960 \
         android.hardware.gnss@1.0 \
