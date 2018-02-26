@@ -162,7 +162,7 @@ void *key_read(){
 		while (1){
 			rc = read(key_client_fd, buf, 1);
 			if (rc <= 0) break;
-printf("Key read byte: %c\n", buf[0]);
+			__android_log_print(ANDROID_LOG_DEBUG, "SWId", "Key read byte: %02X", buf[0]);
 			buf[1] = '\n';
 			buf[2] = 0;
 			write(serial_fd, buf, 2);
@@ -194,7 +194,7 @@ void *bl_read(){
                 while (1){
                         rc = read(bl_client_fd, buf+1, 1);
                         if (rc <= 0) break;
-printf("Backlight read byte: %c\n", buf[1]);
+			__android_log_print(ANDROID_LOG_DEBUG, "SWId", "Backlight Read byte: %02X", buf[1]);
                         buf[2] = '\n';
                         buf[3] = 0;
                         write(serial_fd, buf, 3);
