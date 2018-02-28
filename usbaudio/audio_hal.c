@@ -1345,7 +1345,7 @@ void* runsco(void * args) {
         return NULL;
     }
 
-    adev->sco_pcm_far_in = pcm_open(adev->btcard, 0, PCM_IN, &bt_config);
+    adev->sco_pcm_far_in = pcm_open(adev->btcard, 1, PCM_IN, &bt_config);
     if (adev->sco_pcm_far_in == 0) {
         ALOGD("%s: failed to allocate memory for PCM far/in", __func__);
         pcm_close(adev->sco_pcm_near_out);
@@ -1359,7 +1359,7 @@ void* runsco(void * args) {
         return NULL;
     }
 
-    adev->sco_pcm_far_out = pcm_open(adev->btcard, 0, PCM_OUT, &bt_config);
+    adev->sco_pcm_far_out = pcm_open(adev->btcard, 1, PCM_OUT, &bt_config);
     if (adev->sco_pcm_far_out == 0) {
         ALOGD("%s: failed to allocate memory for PCM far/out", __func__);
         pcm_close(adev->sco_pcm_near_out);
