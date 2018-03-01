@@ -1235,9 +1235,38 @@ void set_line_in(struct audio_hw_device *hw_dev){
 
 void stereo_to_mono(int16_t *stereo, int16_t *mono, size_t samples){
     // Converts interleaved stereo into mono by discarding second channel
-    int i;
+    size_t i;
     for (i=0; i<samples; i++)
         mono[i] = stereo[2*i];
+}
+
+uint8_t rejig(uint8_t* src, uint8_t* dest, size_t len, uint8_t inflow){
+    uint8_t temp_a, temp_b;
+    size_t i;
+
+    for (i=0; i<len; i+=2){
+        temp_a = src[i];
+        dest[i] = src[i+1];
+        dest[i+1] = temp_a;
+    }
+
+    // save last byte to temp_c
+    temp_b = dest[len-1];
+
+    // shift everything 1 byte to the right
+    for (i=len-1; i>0; i--){
+        dest[i] = dest[i-1];
+    }
+    dest[0] = inflow;
+
+    // swap bytes
+    for (i=0; i<len; i+=2){
+        temp_a = dest[i];
+        dest[i] = dest[i+1];
+        dest[i+1] = temp_a;
+    }
+
+    return temp_b;
 }
 
 void* runsco(void * args) {
@@ -1268,11 +1297,11 @@ void* runsco(void * args) {
 
     int16_t lastsample_le = 0;
     int16_t lastsample_be = 0;
-    int16_t tempsample_be = 0;
     uint32_t sumofdiff_be = 0;
     uint32_t sumofdiff_le = 0;
 
     bool swapendian = false;
+    uint8_t temp_b, temp_c;
 
     // AudioProcessing: Initialize
     struct audioproc *apm = audioproc_create();
@@ -1386,10 +1415,12 @@ void* runsco(void * args) {
     block_len_bytes_near_mono = 2 * frames_per_block_near;
     block_len_bytes_near_stereo = 4 * frames_per_block_near;
 
+//TODO: These need to be freed
     framebuf_far_stereo = (int16_t *)malloc(block_len_bytes_far_stereo);
     framebuf_far_mono = (int16_t *)malloc(block_len_bytes_far_mono);
     framebuf_near_stereo = (int16_t *)malloc(block_len_bytes_near_stereo);
     framebuf_near_mono = (int16_t *)malloc(block_len_bytes_near_mono);
+
     if (framebuf_far_stereo == NULL || framebuf_near_stereo == NULL) {
         ALOGD("%s: failed to allocate frames", __func__);
         pcm_close(adev->sco_pcm_near_in);
@@ -1440,31 +1471,27 @@ void* runsco(void * args) {
         memset(framebuf_far_mono, 0, block_len_bytes_far_mono);
         stereo_to_mono(framebuf_far_stereo, framebuf_far_mono, frames_per_block_far);
 
-        if (loopcounter < 1000){ // Reversed endianness detection
+        if (loopcounter < 1000){ // Broken input detection
+
+            temp_c = rejig((uint8_t*)framebuf_far_mono, (uint8_t*)framebuf_far_stereo, block_len_bytes_far_mono, temp_c);
+
             for (i=0; i<frames_per_block_far; i++){
-                tempsample_be = (int16_t)(((uint16_t)framebuf_far_mono[i])>>8 | ((uint16_t)framebuf_far_mono[i])<<8);
-                if (loopcounter == 0 && i == 0){
-                    lastsample_le = framebuf_far_mono[i];
-                    lastsample_be = tempsample_be;
-                }
                 sumofdiff_le += abs(lastsample_le - framebuf_far_mono[i]);
-                sumofdiff_be += abs(lastsample_be - tempsample_be);
+                sumofdiff_be += abs(lastsample_be - framebuf_far_stereo[i]);
             }
             if (!swapendian && sumofdiff_le > sumofdiff_be){
                 swapendian = true;
-                ALOGD("%s: WRONG ENDIANNESS IN SCO INPUT, correcting", __func__);
+                temp_b = 0x00;
+                ALOGD("%s: Detected broken SCO INPUT, correcting", __func__);
             } else if (swapendian && sumofdiff_le <= sumofdiff_be){
                 swapendian = false; // swap back in case the first few samples were just acting weird.
-                ALOGD("%s: Possible misdetection in endianness calculation, reverting", __func__);
+                ALOGD("%s: Possible misdetection in brokenness calculation, reverting", __func__);
             }
             loopcounter++;
         }
 
         if (swapendian){
-            for (i=0; i<frames_per_block_far; i++){
-                tempsample_be = (int16_t)(((uint16_t)framebuf_far_mono[i])>>8 | ((uint16_t)framebuf_far_mono[i])<<8);
-                framebuf_far_mono[i] = tempsample_be;
-            }
+            temp_b = rejig((uint8_t*)framebuf_far_mono, (uint8_t*)framebuf_far_mono, block_len_bytes_far_mono, temp_b);
         }
 
         // AudioProcessing: Analyze reverse stream
