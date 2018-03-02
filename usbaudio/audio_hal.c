@@ -1241,32 +1241,35 @@ void stereo_to_mono(int16_t *stereo, int16_t *mono, size_t samples){
 }
 
 uint8_t rejig(uint8_t* src, uint8_t* dest, size_t len, uint8_t inflow){
-    uint8_t temp_a, temp_b;
+    uint8_t temp_a;
     size_t i;
+
+    /* We have a bunch of bytes that are supposed to come in as;
+     * b1b2 b3b4 b5b6 b7b8
+     *
+     * But they came in in the wrong order, like this;
+     * - b2 was located in the previous block
+     * - we just read this;
+     *   b4b1 b6b3 b8b5 b9b7 (note b9 in second last)
+     *
+     * This data can be repaired using the following;
+     * - reverse bytes in each sample,
+     * - shift right 1 byte
+     * - insert byte carried in from previous read at [0]
+     * - last byte to be carried out
+     * - reverse bytes in each sample
+     *
+     * This process simplifies to below
+     */ 
 
     for (i=0; i<len; i+=2){
         temp_a = src[i];
         dest[i] = src[i+1];
-        dest[i+1] = temp_a;
+        dest[i+1] = inflow;
+        inflow = temp_a;
     }
 
-    // save last byte to temp_c
-    temp_b = dest[len-1];
-
-    // shift everything 1 byte to the right
-    for (i=len-1; i>0; i--){
-        dest[i] = dest[i-1];
-    }
-    dest[0] = inflow;
-
-    // swap bytes
-    for (i=0; i<len; i+=2){
-        temp_a = dest[i];
-        dest[i] = dest[i+1];
-        dest[i+1] = temp_a;
-    }
-
-    return temp_b;
+    return inflow;
 }
 
 void* runsco(void * args) {
