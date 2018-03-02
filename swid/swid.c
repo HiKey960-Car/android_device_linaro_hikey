@@ -285,18 +285,21 @@ int main(){
 	// Initialize uinput
 	if (uinput_init() < 0) return -1;
 
-	key_fd = create_socket("/dev/swi");
+	key_fd = create_socket("/data/vendor/swi");
 
-	system ("/system/bin/chmod 644 /dev/swi");
-	system ("/system/bin/chown system.system /dev/swi");
+	system ("/system/bin/chmod 644 /data/vendor/swi");
+	system ("/system/bin/chown system.system /data/vendor/swi");
+	system ("/system/bin/chcon u:object_r:swid_sock:s0 /data/vendor/swi");
 
 	if (pthread_create(&key_reader, NULL, key_read, NULL) != 0) return -1;
 	pthread_detach(key_reader);
 
-	bl_fd = create_socket("/dev/backlight");
+	bl_fd = create_socket("/data/vendor/backlight");
 
-	system ("/system/bin/chmod 644 /dev/backlight");
-	system ("/system/bin/chown system.system /dev/backlight");
+	system ("/system/bin/chmod 644 /data/vendor/backlight");
+	system ("/system/bin/chown system.system /data/vendor/backlight");
+	system ("/system/bin/chcon u:object_r:swid_sock:s0 /data/vendor/backlight");
+
 
 	if (pthread_create(&bl_reader, NULL, bl_read, NULL) != 0) return -1;
 	pthread_detach(bl_reader);

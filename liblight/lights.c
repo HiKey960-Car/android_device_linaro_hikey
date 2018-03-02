@@ -36,7 +36,7 @@ const char *bus_str(int bus);
 static pthread_once_t g_init = PTHREAD_ONCE_INIT;
 static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
 
-char const*const LCD_FILE = "/dev/backlight";
+char const*const LCD_FILE = "/data/vendor/backlight";
 
 int hid_fd = -1;
 unsigned char lastHID = 0x20;

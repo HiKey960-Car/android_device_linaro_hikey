@@ -26,7 +26,7 @@ public class ConfigureSWI extends Activity {
         mSocket = new LocalSocket();
 
         try {
-            mSocket.connect(new LocalSocketAddress("/dev/swi", LocalSocketAddress.Namespace.FILESYSTEM));
+            mSocket.connect(new LocalSocketAddress("/data/vendor/swi", LocalSocketAddress.Namespace.FILESYSTEM));
             is = new DataInputStream(mSocket.getInputStream());
             os = new DataOutputStream(mSocket.getOutputStream());
         } catch (Exception e){
@@ -61,7 +61,7 @@ public class ConfigureSWI extends Activity {
                 mSocket = new LocalSocket();
 
                 try {
-                    mSocket.connect(new LocalSocketAddress("/dev/swi", LocalSocketAddress.Namespace.FILESYSTEM));
+                    mSocket.connect(new LocalSocketAddress("/data/vendor/swi", LocalSocketAddress.Namespace.FILESYSTEM));
                     is = new DataInputStream(mSocket.getInputStream());
                     os = new DataOutputStream(mSocket.getOutputStream());
                 } catch (Exception e){
