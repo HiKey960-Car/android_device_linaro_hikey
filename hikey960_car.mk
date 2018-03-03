@@ -16,7 +16,7 @@ PRODUCT_PACKAGES += vehicle.default \
 # Steering wheel interface daemon
 PRODUCT_PACKAGES += \
 		swid \
-		SWIConfig
+		RBCarSettings
 
 # Build HiKey960 USB audio HAL
 PRODUCT_PACKAGES += audio.usb.hikey960

@@ -1,4 +1,4 @@
-package tk.rabidbeaver.swi96;
+package tk.rabidbeaver.carsettings;
 
 import android.app.Activity;
 import android.net.LocalSocket;
@@ -11,7 +11,7 @@ import android.widget.EditText;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-public class ConfigureSWI extends Activity {
+public class CarSettings extends Activity {
     LocalSocket mSocket;
     DataInputStream is;
     DataOutputStream os;
