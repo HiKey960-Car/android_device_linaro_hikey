@@ -5,6 +5,9 @@
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
+    <!-- I don't like to do this, but this is needed to work around this;
+         https://developer.android.com/about/versions/oreo/background.html#broadcasts -->
+    <uses-sdk android:minSdkVersion="25" android:targetSdkVersion="25" />
 
     <application
         android:allowBackup="true"
@@ -23,6 +26,12 @@
         <receiver android:name=".BootReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".BluetoothReceiver" >
+            <intent-filter>
+                <action android:name="android.bluetooth.adapter.action.CONNECTION_STATE_CHANGED" />
+                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
             </intent-filter>
         </receiver>
     </application>
