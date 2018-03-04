@@ -1,5 +1,7 @@
 $(call inherit-product, device/linaro/hikey/hikey960.mk)
 
+BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/linaro/hikey/bluetooth_car
+
 $(call inherit-product, device/linaro/hikey/car.mk)
 PRODUCT_PACKAGE_OVERLAYS := device/linaro/hikey/overlay_car
 
