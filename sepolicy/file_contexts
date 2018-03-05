@@ -26,3 +26,4 @@
 /data/vendor/sensor(/.*)?        u:object_r:sensor_vendor_data_file:s0
 /data/vendor/swi                 u:object_r:swid_sock:s0
 /data/vendor/backlight           u:object_r:swid_sock:s0
+/data/gnss                       u:object_r:gnss_data_file:s0

@@ -58,6 +58,8 @@ on post-fs
 on post-fs-data
     mkdir /data/media 0770 media_rw media_rw
     mkdir /data/misc/gatord 0700 root root
+    mkdir /data/gnss 0755 gps system
+    restorecon_recursive /data/gnss
     # Set SELinux security contexts for files used by lava.
     restorecon_recursive /data/local/tmp/lava
 

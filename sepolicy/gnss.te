@@ -1,3 +1,6 @@
+type gnss_data_file, data_file_type, file_type;
+
 allow hal_gnss_default vndbinder_device:chr_file rw_file_perms;
 allow hal_gnss_default console_device:chr_file rw_file_perms;
-
+allow hal_gnss_default gnss_data_file:dir { rw_file_perms search add_name remove_name };
+allow hal_gnss_default gnss_data_file:file { rw_file_perms create setattr };

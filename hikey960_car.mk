@@ -32,7 +32,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += gps.hikey960 \
         android.hardware.gnss@1.0 \
         android.hardware.gnss@1.0-impl \
-        android.hardware.gnss@1.0-service
+        android.hardware.gnss@1.0-service \
+        gps.conf \
+        u-blox.conf
 
 PRODUCT_COPY_FILES += \
     device/generic/car/common/bootanimations/bootanimation-832.zip:system/media/bootanimation.zip \

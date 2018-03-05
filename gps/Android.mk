@@ -1,5 +1,6 @@
 # Copyright (C) 2011 The Android-x86 Open Source Project
 
+ifndef UBLOX_GPS_HAL
 LOCAL_PATH := $(call my-dir)
 
 # HAL module implemenation, not prelinked and stored in
@@ -19,3 +20,4 @@ LOCAL_SRC_FILES += power-$(TARGET_PRODUCT).c
 endif
 
 include $(BUILD_SHARED_LIBRARY)
+endif
