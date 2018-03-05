@@ -1018,14 +1018,14 @@ void* CUbxGpsState::agpsDownloadThread(void *pThreadData)
 	int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == -1) 
 	{
-		LOGE("CUbxGpsState::%s : Cannot create socket", __FUNCTION__);
+		LOGE("CUbxGpsState::%s : Cannot create socket: %s", __FUNCTION__, strerror(errno));
 		data->active = false;
 		return NULL;
 	}
 	// establish connection to the server
 	if (connect( sock, (struct sockaddr*) (void *) &server, sizeof( server)) == -1)
 	{
-		LOGE("CUbxGpsState::%s : Cannot connect server", __FUNCTION__);
+		LOGE("CUbxGpsState::%s : Cannot connect server: %s", __FUNCTION__, strerror(errno));
 		close(sock);
 		data->active = false;
 		return NULL;
