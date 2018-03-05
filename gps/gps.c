@@ -47,7 +47,7 @@ typedef struct {
 
 static GpsState  _gps_state[1];
 static int    id_in_fixed[12];
-//#define  GPS_DEBUG  1
+#define  GPS_DEBUG  1
 
 #define  DFR(...)   ALOGD(__VA_ARGS__)
 
@@ -513,7 +513,10 @@ nmea_reader_parse( NmeaReader*  r )
 
     gettimeofday(&tv, NULL);
     if (_gps_state->init)
-        _gps_state->callbacks->nmea_cb(tv.tv_sec*1000+tv.tv_usec/1000, r->in, r->pos +1);
+        _gps_state->callbacks->nmea_cb(tv.tv_sec*1000+tv.tv_usec/1000, r->in, r->pos);
+
+    D("Sent NMEA length %d, value: %s|", r->pos +1, r->in);
+    D("Last 5 bytes and then some: 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X", r->in[r->pos-4], r->in[r->pos-3], r->in[r->pos-2], r->in[r->pos-1], r->in[r->pos], r->in[r->pos+1], r->in[r->pos+2]);
 
     nmea_tokenizer_init(tzer, r->in, r->in + r->pos);
 #if GPS_DEBUG
@@ -738,7 +741,7 @@ nmea_reader_addc( NmeaReader*  r, int  c )
     r->pos       += 1;
 
     if (c == '\n') {
-        r->in[r->pos + 1] = 0; // null terminate the string
+        r->in[r->pos] = 0; // null terminate the string
         nmea_reader_parse( r );
         r->pos = 0;
     }
@@ -963,7 +966,8 @@ gps_state_init( GpsState*  state, GpsCallbacks* callbacks )
     do {
         state->fd = open( device, O_RDWR );
         if (state->fd < 0 && errno == ENOENT) sleep(5);
-    } while (state->fd < 0 && (errno == EINTR || errno == ENOENT));
+        done++;
+    } while (state->fd < 0 && (errno == EINTR || errno == ENOENT) && done < 5);
 
     if (state->fd < 0) {
         ALOGE("could not open gps serial device %s: %s", device, strerror(errno) );
