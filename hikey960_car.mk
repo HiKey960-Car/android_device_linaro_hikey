@@ -20,8 +20,8 @@ PRODUCT_PACKAGES += \
 		swid \
 		RBCarSettings
 
-# Build HiKey960 USB audio HAL
-PRODUCT_PACKAGES += audio.usb.hikey960
+# Build HiKey960 USB primary audio HAL
+PRODUCT_PACKAGES += audio.primary.hikey960
 
 # Build HiKey960 lights HAL
 PRODUCT_PACKAGES += \
@@ -46,7 +46,7 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.screen.landscape.xml:system/etc/permissions/android.hardware.screen.landscape.xml
 
 PRODUCT_COPY_FILES += \
-    device/linaro/hikey/usbaudio/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml
+    device/linaro/hikey/usbaudio/audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml
 
 PRODUCT_COPY_FILES += \
     device/linaro/hikey/broadcastradio/android.hardware.broadcastradio.xml:system/etc/permissions/android.hardware.broadcastradio.xml
