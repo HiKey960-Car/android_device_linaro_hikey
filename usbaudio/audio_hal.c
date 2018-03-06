@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #include <log/log.h>
 #include <cutils/list.h>
@@ -286,37 +287,68 @@ static void adev_remove_stream_from_list(
     device_unlock(adev);
 }
 
-/*
- * Extract the card and device numbers from the supplied key/value pairs.
- *   kvpairs    A null-terminated string containing the key/value pairs or card and device.
- *              i.e. "card=1;device=42"
- *   card   A pointer to a variable to receive the parsed-out card number.
- *   device A pointer to a variable to receive the parsed-out device number.
- * NOTE: The variables pointed to by card and device return -1 (undefined) if the
- *  associated key/value pair is not found in the provided string.
- *  Return true if the kvpairs string contain a card/device spec, false otherwise.
- */
-static bool parse_card_device_params(const char *kvpairs, int *card, int *device)
+int sco_card_select(const struct dirent *entry)
 {
-    struct str_parms * parms = str_parms_create_str(kvpairs);
-    char value[32];
-    int param_val;
+   return ((strstr(entry->d_name, "pcmC") != NULL) && (strstr(entry->d_name, "D1c") != NULL));
+}
+
+int primary_card_select(const struct dirent *entry)
+{
+   return ((strstr(entry->d_name, "pcmC") != NULL) && (strstr(entry->d_name, "D0") != NULL));
+}
+
+/*
+ * Find the primary and bluetooth cards
+ *   card    A pointer to a variable to receive the primary card number.
+ *   device  A pointer to a variable to receive the primary card device number.
+ *   scocard A pointer to a variable to receive the bluetooth card number.
+ * NOTE: The variables pointed to by card, device, and scocard return -1 (undefined) if the
+ *  associated card/device is not found in the provided string.
+ *  Return true if the cards/devices are all found, false otherwise.
+ */
+static bool find_cards_devices(int *card, int *device, int *scocard)
+{
+    struct dirent **namelist;
+    int n, t;
+    int cards[10];
+    for (n=0; n<10; n++) cards[n] = 0;
 
     // initialize to "undefined" state.
     *card = -1;
     *device = -1;
+    *scocard = -1;
 
-    param_val = str_parms_get_str(parms, "card", value, sizeof(value));
-    if (param_val >= 0) {
-        *card = atoi(value);
+    n = scandir("/dev/snd", &namelist, sco_card_select, alphasort);
+    if (n < 0) ALOGE("SCANDIR error");
+    else {
+        while (n--){
+            *scocard = namelist[n]->d_name[4] - 0x30;
+            ALOGD("SCANDIR found SCO card at %d", *scocard);
+            free(namelist[n]);
+        }
+        free(namelist);
     }
 
-    param_val = str_parms_get_str(parms, "device", value, sizeof(value));
-    if (param_val >= 0) {
-        *device = atoi(value);
+    n = scandir("/dev/snd", &namelist, primary_card_select, alphasort);
+    if (n < 0) ALOGE("SCANDIR error");
+    else {
+        while (n--){
+            t = namelist[n]->d_name[4] - 0x30;
+            if (t < 10) cards[t]++;
+            ALOGD("SCANDIR found card at %d", t);
+            free(namelist[n]);
+        }
+        free(namelist);
     }
 
-    str_parms_destroy(parms);
+    for (n=0; n<10; n++){
+        if (cards[n] == 2 && n != *scocard){
+            ALOGD("SCANDIR found PRIMARY card at device %d", n);
+            *card = n;
+            *device = 0;
+            break;
+        }
+    }
 
     return *card >= 0 && *device >= 0;
 }
@@ -456,8 +488,9 @@ static int out_set_parameters(struct audio_stream *stream, const char *kvpairs)
     int ret_value = 0;
     int card = -1;
     int device = -1;
+    int scocard = -1;
 
-    if (!parse_card_device_params(kvpairs, &card, &device)) {
+    if (!find_cards_devices(&card, &device, &scocard)) {
         // nothing to do
         return ret_value;
     }
@@ -466,6 +499,8 @@ static int out_set_parameters(struct audio_stream *stream, const char *kvpairs)
     /* Lock the device because that is where the profile lives */
     device_lock(out->adev);
 
+    if (scocard >= 0) out->adev->btcard = scocard;
+    if (card >= 0) out->adev->usbcard = card;
     if (!profile_is_cached_for(out->profile, card, device)) {
         /* cannot read pcm device info if playback is active */
         if (!out->standby)
@@ -536,6 +571,7 @@ static ssize_t out_write(struct audio_stream_out *stream, const void* buffer, si
         ret = start_output_stream(out);
         device_unlock(out->adev);
         if (ret != 0) {
+            ALOGE("%s: start_output_stream returned error %d", __func__, ret);
             goto err;
         }
         out->standby = false;
@@ -628,6 +664,7 @@ static int adev_open_output_stream(struct audio_hw_device *hw_dev,
           handle, devicesSpec, flags, address);
 
     struct stream_out *out;
+    int timer = 0;
 
     out = (struct stream_out *)calloc(1, sizeof(struct stream_out));
     if (out == NULL) {
@@ -664,8 +701,15 @@ static int adev_open_output_stream(struct audio_hw_device *hw_dev,
     struct pcm_config proxy_config;
     memset(&proxy_config, 0, sizeof(proxy_config));
 
-    /* Pull out the card/device pair */
-    parse_card_device_params(address, &(out->profile->card), &(out->profile->device));
+    /* Pull out the card/device pair, if card isn't present, wait for it up to 5 seconds*/
+    while (out->profile->card < 0 && timer < 50){
+        find_cards_devices(&(out->profile->card), &(out->profile->device), &(out->adev->btcard));
+        if (out->profile->card >= 0) break;
+        usleep(100000); // sleep 1/10th of a second
+        timer++;
+    }
+
+    out->adev->usbcard = out->profile->card;
 
     profile_read_device_info(out->profile);
 
@@ -870,8 +914,9 @@ static int in_set_parameters(struct audio_stream *stream, const char *kvpairs)
     int ret_value = 0;
     int card = -1;
     int device = -1;
+    int scocard = -1;
 
-    if (!parse_card_device_params(kvpairs, &card, &device)) {
+    if (!find_cards_devices(&card, &device, &scocard)) {
         // nothing to do
         return ret_value;
     }
@@ -879,6 +924,8 @@ static int in_set_parameters(struct audio_stream *stream, const char *kvpairs)
     stream_lock(&in->lock);
     device_lock(in->adev);
 
+    if (scocard >= 0) in->adev->btcard = scocard;
+    if (card >= 0) in->adev->usbcard = card;
     if (card >= 0 && device >= 0 && !profile_is_cached_for(in->profile, card, device)) {
         /* cannot read pcm device info if playback is active */
         if (!in->standby)
@@ -1043,6 +1090,7 @@ static int adev_open_input_stream(struct audio_hw_device *hw_dev,
 
     struct stream_in *in = (struct stream_in *)calloc(1, sizeof(struct stream_in));
     int ret = 0;
+    int timer = 0;
 
     if (in == NULL) {
         return -ENOMEM;
@@ -1076,8 +1124,14 @@ static int adev_open_input_stream(struct audio_hw_device *hw_dev,
     struct pcm_config proxy_config;
     memset(&proxy_config, 0, sizeof(proxy_config));
 
-    /* Pull out the card/device pair */
-    parse_card_device_params(address, &(in->profile->card), &(in->profile->device));
+    /* Pull out the card/device pair, if card isn't present, wait for it up to maximum of 5 seconds*/
+    while (in->profile->card < 0 && timer < 50){
+        find_cards_devices(&(in->profile->card), &(in->profile->device), &(in->adev->btcard));
+        if (in->profile->card >= 0) break;
+        usleep(100000);
+        timer++;
+    }
+    in->adev->usbcard = in->profile->card;
 
     profile_read_device_info(in->profile);
 
@@ -1664,13 +1718,6 @@ static int adev_set_parameters(struct audio_hw_device *hw_dev, const char *kvpai
     struct str_parms *parms;
 
     parms = str_parms_create_str(kvpairs);
-
-    ret = str_parms_get_str(parms, AUDIO_PARAMETER_CARD, value, sizeof(value));
-    if (ret >= 0) {
-        val = atoi(value);
-        adev->usbcard = val;
-        adev->btcard = (val + 1) % 2;
-    }
 
     ret = str_parms_get_str(parms, AUDIO_PARAMETER_HFP_SET_SAMPLING_RATE, value, sizeof(value));
     if (ret >= 0) {
