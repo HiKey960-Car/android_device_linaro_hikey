@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+ifeq ($(TARGET_PRODUCT),hikey960_car)
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
@@ -32,4 +32,4 @@ LOCAL_CFLAGS := -Wno-unused-parameter -DWEBRTC_POSIX -DWEBRTC_LINUX -DWEBRTC_THR
 
 LOCAL_HEADER_LIBRARIES += libhardware_headers libwebrtc_headers
 include $(BUILD_SHARED_LIBRARY)
-
+endif
