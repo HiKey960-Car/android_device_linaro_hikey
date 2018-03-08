@@ -145,7 +145,7 @@ CUbxGpsState::CUbxGpsState()
 	property_get("ro.product.model", model, "");
 	property_get("ro.product.serial", serial, "");
 	if (strcmp(serial,"")==0)
-		snprintf(m_agpsThreadParam.request, MAX_REQUEST, "and=%s.%s", brand, model);
+		snprintf(m_agpsThreadParam.request, MAX_REQUEST, "and=%s.%s", brand, model); // MAX_REQUEST = 512
 	else
 		snprintf(m_agpsThreadParam.request, MAX_REQUEST, "and=%s.%s.%s", brand, model, serial);
 	m_agpsThreadParam.request[MAX_REQUEST-1] = '\0';
@@ -1032,7 +1032,7 @@ void* CUbxGpsState::agpsDownloadThread(void *pThreadData)
 	}
 
     // send the http get request
-	LOGV("Send %s", data->request);
+	LOGD("Outbound HTTP request: %s", data->request);
 	send(sock, data->request, strlen(data->request), 0);
 	// now receive the header 
 	int iSize = 0;
@@ -1426,6 +1426,16 @@ bool CUbxGpsState::loadAiding(void)
         {
             m_Db.dbAssistCleared = false;
             LOGV("%s : Aiding data loaded successfully", __FUNCTION__);
+
+		char brand[PROPERTY_VALUE_MAX];
+		char model[PROPERTY_VALUE_MAX];
+		property_get("ro.product.brand", brand, "");
+		property_get("ro.product.model", model, "");
+		if (!(m_Db.pos.latDeg == 0.0 && m_Db.pos.lonDeg == 0.0))
+			snprintf(m_agpsThreadParam.request, MAX_REQUEST, "cmd=full;lat=%f;lon=%f;pacc=%d;and=%s.%s", m_Db.pos.latDeg, m_Db.pos.lonDeg, m_Db.pos.accM*100, brand, model);
+		else
+			snprintf(m_agpsThreadParam.request, MAX_REQUEST, "and=%s.%s", brand, model);
+		m_agpsThreadParam.request[MAX_REQUEST-1] = '\0';
         }
         else
         {
