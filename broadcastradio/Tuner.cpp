@@ -61,7 +61,7 @@ Tuner::Tuner(V1_0::Class classId, const sp<V1_0::ITunerCallback>& callback)
 	sleep(1);
 	dmhd1000.setDTR(true);
 	sleep(1);
-	dmhd1000.hd_setvolume(50);
+	dmhd1000.hd_setvolume(70);
 	sleep(1);
 	dmhd1000.passCB(mCurrentProgram, mCurrentProgramInfo, callback);// mCallback1_1);
 	mIsClosed = false;
