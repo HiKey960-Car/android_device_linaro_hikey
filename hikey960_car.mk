@@ -18,6 +18,7 @@ PRODUCT_PACKAGES += vehicle.default \
 # Steering wheel interface daemon
 PRODUCT_PACKAGES += \
 		swid \
+		camd \
 		RBCarSettings
 
 # Build HiKey960 USB primary audio HAL

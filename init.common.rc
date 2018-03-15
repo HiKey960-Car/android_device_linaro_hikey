@@ -19,6 +19,7 @@ on init
 on fs
     mount_all /fstab.${ro.hardware}
     setprop ro.crypto.fuse_sdcard false
+    restorecon_recursive /oem
 
 on post-fs
     # For legacy support
@@ -97,6 +98,12 @@ service swid /system/bin/swid
     class main
     user root
     group bluetooth
+    oneshot
+
+service camd /system/bin/camd
+    class main
+    user root
+    group root
     oneshot
 
 service wpa_supplicant /system/vendor/bin/hw/wpa_supplicant \

@@ -1,0 +1,23 @@
+type camd, domain;
+type camd_exec, exec_type, vendor_file_type, file_type;
+type camd_sock, data_file_type, file_type;
+type camd_file, data_file_type, file_type;
+
+init_daemon_domain(camd)
+
+allow camd console_device:chr_file rw_file_perms;
+allow camd shell_exec:file { execute execute_no_trans read open getattr };
+allow camd toolbox_exec:file { execute execute_no_trans read open getattr };
+
+allow camd camd:capability { sys_admin dac_override };
+allow camd kernel:process { setsched };
+
+allow camd camd_file:dir { search rw_dir_perms };
+allow camd camd_file:file { create rw_file_perms };
+
+allow camd sysfs:dir { read open getattr };
+
+allow camd system_file:file { execute_no_trans execute read open getattr };
+
+allow camd audio_device:dir { search };
+allow camd audio_device:chr_file { read open write getattr setattr ioctl };
