@@ -21,3 +21,6 @@ allow camd system_file:file { execute_no_trans execute read open getattr };
 
 allow camd audio_device:dir { search };
 allow camd audio_device:chr_file { read open write getattr setattr ioctl };
+
+allow untrusted_app camd_file:dir { search getattr read open };
+allow untrusted_app camd_file:file { getattr read open };
