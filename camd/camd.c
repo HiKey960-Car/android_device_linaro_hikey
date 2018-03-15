@@ -107,7 +107,7 @@ int main(){
 		exit(1); // dashcam recording is disabled, so terminate now.
 	}
 	__android_log_print(ANDROID_LOG_DEBUG, "CAMd", "Dashcam starting up.");
-	umask(0);
+	umask(0022);
 	/*
 	 * Specific cameras will be identified by their USB path, which will remain constant
 	 * as long as the physical connection heirarchy remains constant.
@@ -248,7 +248,7 @@ int main(){
 			for (i = 0; i < streams; i++){
 				sprintf(&target[strlen(target)], " -map %d", i);
 			}
-			sprintf(&target[strlen(target)], " -f segment -strftime 1 -segment_time 60 -segment_atclocktime 1 -reset_timestamps 1 /oem/cam_%%Y-%%m-%%d_%%H-%%M-%%S.mkv");
+			sprintf(&target[strlen(target)], " -f segment -strftime 1 -segment_time 60 -segment_atclocktime 1 -reset_timestamps 1 /oem/cam_%%Y-%%m-%%d_%%H-%%M-%%S_UTC.mkv");
 
 			__android_log_print(ANDROID_LOG_DEBUG, "CAMd", "Executing: %s", target);
 
