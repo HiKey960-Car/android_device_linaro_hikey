@@ -13,7 +13,7 @@ allow camd camd:capability { sys_admin dac_override };
 allow camd kernel:process { setsched };
 
 allow camd camd_file:dir { search rw_dir_perms };
-allow camd camd_file:file { create rw_file_perms };
+allow camd camd_file:file { create rw_file_perms unlink };
 
 allow camd sysfs:dir { read open getattr };
 
@@ -24,3 +24,5 @@ allow camd audio_device:chr_file { read open write getattr setattr ioctl };
 
 allow untrusted_app camd_file:dir { search getattr read open };
 allow untrusted_app camd_file:file { getattr read open };
+
+allow camd devpts:chr_file { read write open ioctl };

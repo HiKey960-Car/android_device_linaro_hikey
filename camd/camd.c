@@ -24,7 +24,10 @@ int compar(const struct dirent **pa, const struct dirent **pb){
 	const char *a = (*pa)->d_name;
 	const char *b = (*pb)->d_name;
 	struct stat ainfo, binfo;
-	if (stat(a, &ainfo) != 0 || stat(b, &binfo) != 0) return 0;
+	char fulla[256], fullb[256];
+	sprintf(fulla, "/oem/%s", a);
+	sprintf(fullb, "/oem/%s", b);
+	if (stat(fulla, &ainfo) != 0 || stat(fullb, &binfo) != 0) return 0;
 	if (ainfo.st_mtime == binfo.st_mtime) return 0;
 	else if (ainfo.st_mtime < binfo.st_mtime) return 1;
 	return -1;
@@ -33,7 +36,9 @@ int compar(const struct dirent **pa, const struct dirent **pb){
 int filter(const struct dirent *d){
         struct dirent a = *d;
         struct stat ainfo;
-        stat(a.d_name, &ainfo);
+	char fullpath[256];
+	sprintf(fullpath, "/oem/%s", a.d_name);
+        stat(fullpath, &ainfo);
         if(S_ISREG(ainfo.st_mode)) return 1;
         return 0;
 }
@@ -49,17 +54,23 @@ int checkfree(){
 
 void *reap(){
 	struct dirent **namelist;
-	int n;
+	int n, a;
+	char fullpath[256];
 	while (1){
+		a = 1;
 		if (checkfree() < (100 - 90)){
 			n = scandir("/oem", &namelist, *filter, *compar);
-			if (n < 0) __android_log_print(ANDROID_LOG_ERROR, "CAMd", "reaper scandir");
+			if (n < 0) __android_log_print(ANDROID_LOG_ERROR, "CAMd", "reaper scandir error: %s", strerror(errno));
 			else {
+				__android_log_print(ANDROID_LOG_DEBUG, "CAMd", "Reaper running, scanned %d files", n);
 				while (n > 0) {
 					n--;
-					if (checkfree() < (100 - 90)){
-						unlink(namelist[n]->d_name);
-					}
+					if (a && checkfree() < (100 - 90)){
+						sprintf(fullpath, "/oem/%s", namelist[n]->d_name);
+						__android_log_print(ANDROID_LOG_DEBUG, "CAMd", "Reaping file: %s", fullpath);
+						if (unlink(fullpath) < 0)
+							__android_log_print(ANDROID_LOG_ERROR, "CAMd", "Unlink error: %s", strerror(errno));
+					} else a=0;
 					free(namelist[n]);
 				}
 				free(namelist);
@@ -227,7 +238,7 @@ int main(){
 			(strlen(audio_path) > 0 && strlen(audio_dev) == 0))){
 
 			// Generate ffmpeg command line:
-			sprintf(target, "/system/bin/ffmpeg -f v4l2 -thread_queue_size 512 %s -i /dev/%s", front_params, front_dev);
+			sprintf(target, "/system/bin/logwrapper /system/bin/ffmpeg -f v4l2 -thread_queue_size 512 %s -i /dev/%s", front_params, front_dev);
 			if (strlen(rear_dev) > 0){
 				sprintf(&target[strlen(target)], " -f v4l2 -thread_queue_size 512 %s -i /dev/%s", rear_params, rear_dev);
 				streams++;
