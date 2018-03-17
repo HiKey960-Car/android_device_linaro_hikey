@@ -23,7 +23,7 @@
 ###############################################################################
 
 ifdef UBLOX_GPS_HAL
-SUPL_ENABLED := 1
+#SUPL_ENABLED := 1
 
 LOCAL_PATH := $(call my-dir)
 TEMP_PATH:=$(LOCAL_PATH)
