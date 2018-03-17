@@ -252,14 +252,14 @@ int main(){
 				streams++;
 			}
 			if (strlen(audio_dev) > 0){
-				sprintf(&target[strlen(target)], " -f oss -thread_queue_size 512 -i /dev/snd/%s -c:a mp2 -b:a 32000 -af \"pan=mono|c0=c0\"", audio_dev);
+				sprintf(&target[strlen(target)], " -f oss -thread_queue_size 512 -i /dev/snd/%s -c:a mp2 -b:a 32000 -async -1 -af \"pan=mono|c0=c0\"", audio_dev);
 				streams++;
 			}
 			sprintf(&target[strlen(target)], " -c:v copy");
 			for (i = 0; i < streams; i++){
 				sprintf(&target[strlen(target)], " -map %d", i);
 			}
-			sprintf(&target[strlen(target)], " -copyts -start_at_zero -f segment -strftime 1 -segment_time 60 -segment_atclocktime 1 -reset_timestamps 1 /oem/cam_%%Y-%%m-%%d_%%H-%%M-%%S_UTC.mkv");
+			sprintf(&target[strlen(target)], " -copyts -start_at_zero -copytb 1 -f segment -strftime 1 -segment_time 60 -segment_atclocktime 1 -reset_timestamps 1 /oem/cam_%%Y-%%m-%%d_%%H-%%M-%%S_UTC.mkv");
 
 			__android_log_print(ANDROID_LOG_DEBUG, "CAMd", "Executing: %s", target);
 
