@@ -16,6 +16,8 @@
 #include <dirent.h>
 #include <android/log.h>
 
+int skipsleep;
+
 int revalphasort(const struct dirent **pa, const struct dirent **pb){
 	return alphasort(pb, pa);
 }
@@ -80,6 +82,21 @@ void *reap(){
 	}
 }
 
+void *timewatch(){
+	time_t last, current;
+	last = time(NULL);
+	while (1){
+		current = time(NULL);
+		sleep(10);
+		if ((current - last) > 60 || (current - last) < -50){ // if the time jumped too far
+			__android_log_print(ANDROID_LOG_DEBUG, "CAMd", "Excessive time jump detected, resetting ffmpeg.");
+			skipsleep = 1;
+			system("/system/bin/killall -9 ffmpeg"); // ffmpeg will be immediately restarted
+		}
+		last = current;
+	}
+}
+
 int main(){
 	struct dirent **namelist;
 	int i, n, streams;
@@ -110,7 +127,7 @@ int main(){
 
 	int fsubc, bsubc, lsubc, rsubc;
 
-	pthread_t reaper_thread;
+	pthread_t reaper_thread, timewatch_thread;
 	
 	property_get("persist.dashcam.enabled", dashcam_en, "0");
 	if (atoi(dashcam_en) == 0){
@@ -169,14 +186,17 @@ int main(){
 		exit(1);
 	}
 
-	if (strlen(front_path) > 0)
+	if (strlen(front_path) > 0){
 		pthread_create(&reaper_thread, NULL, reap, NULL);
+		pthread_create(&timewatch_thread, NULL, timewatch, NULL);
+	}
 
 	while (1){
 		streams = 1;
 		fsubc=0; bsubc=0; lsubc=0; rsubc=0;
 		front_dev[0] = '\0'; rear_dev[0] = '\0'; left_dev[0] = '\0'; right_dev[0] = '\0';
 		target[0] = '\0';
+		skipsleep = 0;
 
 		n = scandir("/sys/class/video4linux", &namelist, NULL, revalphasort);
 		if (n < 0) __android_log_print(ANDROID_LOG_ERROR, "CAMd", "SCANDIR error");
@@ -252,7 +272,7 @@ int main(){
 				streams++;
 			}
 			if (strlen(audio_dev) > 0){
-				sprintf(&target[strlen(target)], " -f oss -thread_queue_size 512 -i /dev/snd/%s -c:a mp2 -b:a 32000 -async -1 -af \"pan=mono|c0=c0\"", audio_dev);
+				sprintf(&target[strlen(target)], " -f oss -thread_queue_size 512 -i /dev/snd/%s -ac 1 -af aresample=async=1 -c:a mp2 -b:a 32000 ", audio_dev);
 				streams++;
 			}
 			sprintf(&target[strlen(target)], " -c:v copy");
@@ -267,7 +287,7 @@ int main(){
 		} else
 			__android_log_print(ANDROID_LOG_ERROR, "CAMd", "Unable to find all configured devices. Trying again in 10 seconds.");
 
-		sleep(10);
+		if (!skipsleep) sleep(10);
 	}
 }
 
