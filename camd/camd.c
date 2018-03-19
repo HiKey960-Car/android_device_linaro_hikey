@@ -186,6 +186,8 @@ int main(){
 		exit(1);
 	}
 
+	sleep(30);
+
 	if (strlen(front_path) > 0){
 		pthread_create(&reaper_thread, NULL, reap, NULL);
 		pthread_create(&timewatch_thread, NULL, timewatch, NULL);
