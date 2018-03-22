@@ -9,7 +9,7 @@ allow camd console_device:chr_file rw_file_perms;
 allow camd shell_exec:file { execute execute_no_trans read open getattr };
 allow camd toolbox_exec:file { execute execute_no_trans read open getattr };
 
-allow camd camd:capability { sys_admin dac_override };
+allow camd camd:capability { sys_admin };
 allow camd kernel:process { setsched };
 
 allow camd camd_file:dir { search rw_dir_perms };
