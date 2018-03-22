@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    tools:context="tk.rabidbeaver.carsettings.CarSettings">
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+        <Button
+            android:layout_width="300dp"
+            android:layout_height="70dp"
+            android:text="START PROGRAMMING"
+            android:id="@+id/startbtn" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="30dp"/>
+
+        <Button
+            android:layout_width="300dp"
+            android:layout_height="70dp"
+            android:text="END PROGRAMMING"
+            android:id="@+id/endbtn" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="30dp"/>
+
+        <Button
+            android:layout_width="300dp"
+            android:layout_height="70dp"
+            android:text="RECONNECT"
+            android:id="@+id/reconnect" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="30dp"/>
+
+        <EditText
+            android:layout_width="300dp"
+            android:layout_height="70dp"
+            android:text="03"
+            android:id="@+id/input"/>
+
+        <Button
+            android:layout_width="300dp"
+            android:layout_height="70dp"
+            android:text="Program button"
+            android:id="@+id/savebtn"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <Switch
+            android:id="@+id/onhotspot"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:checked="false"
+            android:text="Enable Hotspot on boot"
+            android:textOff="OFF"
+            android:textOn="ON"/>
+        <tk.rabidbeaver.carsettings.MultiSpinner
+            android:id="@+id/devspin"
+            android:layout_width="match_parent"
+            android:layout_height="70dp" />
+        <Switch
+            android:id="@+id/autopan"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_below="@+id/laytop"
+            android:layout_centerHorizontal="true"
+            android:checked="false"
+            android:text="Auto Connect PAN"
+            android:textOff="OFF"
+            android:textOn="ON" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Warning: If you change the device selection, you must disable and re-enable PAN before the setting will be stored."/>
+    </LinearLayout>
+</LinearLayout>

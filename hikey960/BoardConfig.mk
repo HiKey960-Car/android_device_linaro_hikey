@@ -10,6 +10,9 @@ TARGET_NO_DTIMAGE := false
 
 BOARD_KERNEL_CMDLINE := androidboot.hardware=hikey960 console=ttyFIQ0 androidboot.console=ttyFIQ0
 BOARD_KERNEL_CMDLINE += firmware_class.path=/system/etc/firmware loglevel=15 efi=noruntime
+ifdef HDMI_RES
+BOARD_KERNEL_CMDLINE += video=HDMI-A-1:$(HDMI_RES)
+endif
 ifneq ($(TARGET_SENSOR_MEZZANINE),)
 BOARD_KERNEL_CMDLINE += overlay_mgr.overlay_dt_entry=hardware_cfg_$(TARGET_SENSOR_MEZZANINE)
 endif

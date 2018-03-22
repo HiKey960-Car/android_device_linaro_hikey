@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+ifneq ($(TARGET_PRODUCT),hikey960_car)
 LOCAL_PATH := $(call my-dir)
 
 # The default audio HAL module, which is a stub, that is loaded if no other
@@ -34,4 +34,4 @@ LOCAL_C_INCLUDES += \
         system/media/audio_effects/include
 
 include $(BUILD_SHARED_LIBRARY)
-
+endif

@@ -1,0 +1,17 @@
+type gnss_data_file, data_file_type, file_type;
+
+allow hal_gnss_default vndbinder_device:chr_file rw_file_perms;
+allow hal_gnss_default console_device:chr_file rw_file_perms;
+allow hal_gnss_default gnss_data_file:dir { rw_file_perms search add_name remove_name };
+allow hal_gnss_default gnss_data_file:file { rw_file_perms create setattr };
+allow system_server gnss_data_file:dir { rw_file_perms search add_name remove_name };
+allow system_server gnss_data_file:file { rw_file_perms create setattr };
+allow hal_gnss_default hal_gnss_default:tcp_socket { create connect read write };
+allow hal_gnss_default hal_gnss_default:udp_socket { create bind read write ioctl };
+allow hal_gnss_default dnsproxyd_socket:sock_file { write };
+allow hal_gnss_default node:udp_socket { node_bind };
+allow hal_gnss_default netd:unix_stream_socket { connectto };
+allow hal_gnss_default fwmarkd_socket:sock_file { write };
+allow netd hal_gnss_default:fd { use };
+allow netd hal_gnss_default:tcp_socket { read write getopt setopt };
+allow hal_gnss_default port:tcp_socket { name_connect };

@@ -18,7 +18,7 @@ TI_WILINK_FW_PATH := $(TARGET_OUT_ETC)/firmware/ti-connectivity
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := TIInit_11.8.32.bts
-ifneq ($(filter hikey960, $(TARGET_DEVICE)),)
+ifneq (,$(filter $(TARGET_PRODUCT),hikey960 hikey960_car))
 LOCAL_SRC_FILES := TIInit_11.8.32-pcm-960.bts
 else
 LOCAL_SRC_FILES := TIInit_11.8.32.bts
@@ -40,7 +40,7 @@ include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := wl18xx-conf.bin
-ifneq ($(filter hikey960, $(TARGET_DEVICE)),)
+ifneq (,$(filter $(TARGET_PRODUCT),hikey960 hikey960_car))
 LOCAL_SRC_FILES := wl18xx-conf-wl1837mod.bin
 else
 LOCAL_SRC_FILES := wl18xx-conf.bin
