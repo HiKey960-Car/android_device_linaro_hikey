@@ -12,8 +12,12 @@ PRODUCT_PACKAGES += vehicle.default \
 	tinypcminfo \
 	tinyhostless \
 	android.hardware.automotive.vehicle@2.0 \
-	android.hardware.automotive.vehicle@2.0-service \
+	android.hardware.automotive.vehicle@2.0-service
+
+ifdef DMHD1000
+PRODUCT_PACKAGES += \
 	android.hardware.broadcastradio@1.1-service.dmhd1000
+endif
 
 # Steering wheel interface daemon
 PRODUCT_PACKAGES += \
