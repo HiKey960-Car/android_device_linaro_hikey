@@ -17,7 +17,7 @@ allow swid swid:capability { chown fowner fsetid };
 allow swid system_data_file:sock_file { relabelfrom };
 allow swid swid_sock:sock_file { relabelto };
 allow swid vendor_data_file:dir { rw_file_perms add_name remove_name };
-allow swid vendor_data_file:sock_file { create getattr setattr unlink };
+allow swid vendor_data_file:sock_file { relabelfrom create getattr setattr unlink };
 
 allow system_app swid_sock:sock_file { write };
 allow system_app swid:unix_stream_socket { connectto };
