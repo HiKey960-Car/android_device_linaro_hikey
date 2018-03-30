@@ -65,6 +65,8 @@
 
 #define DEFAULT_INPUT_BUFFER_SIZE_MS 20
 
+#define MICROPHONE_VOLUME_DEFAULT 90
+
 /* TODO
  * For multi-channel audio (> 2 channels)...
  * 
@@ -1730,7 +1732,7 @@ static int adev_set_parameters(struct audio_hw_device *hw_dev, const char *kvpai
         pthread_mutex_lock(&adev->sco_thread_lock);
         if (strcmp(value, "true") == 0){
             if (adev->sco_thread == 0) {
-                adev_set_mic_volume(hw_dev, 90); // set microphone to 90% of maximum (default is 59%)
+                adev_set_mic_volume(hw_dev, MICROPHONE_VOLUME_DEFAULT);
                 adev->terminate_sco = false;
                 pthread_create(&adev->sco_thread, NULL, &runsco, adev);
                 set_line_in(hw_dev);
@@ -1794,13 +1796,17 @@ static int adev_set_mic_mute(struct audio_hw_device *hw_dev, bool state)
     struct audio_device * adev = (struct audio_device *)hw_dev;
     device_lock(adev);
     adev->mic_muted = state;
+    if (!state) adev_set_mic_volume(hw_dev, MICROPHONE_VOLUME_DEFAULT);
+    else adev_set_mic_volume(hw_dev, 0);
     device_unlock(adev);
-    return -ENOSYS;
+    return 0;
 }
 
 static int adev_get_mic_mute(const struct audio_hw_device *hw_dev, bool *state)
 {
-    return -ENOSYS;
+    struct audio_device * adev = (struct audio_device *)hw_dev;
+    *state = adev->mic_muted;
+    return 0;
 }
 
 static int adev_dump(const struct audio_hw_device *device, int fd)
