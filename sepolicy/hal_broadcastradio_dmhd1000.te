@@ -11,3 +11,7 @@ allow platform_app broadcastradio_service:service_manager { find };
 allow audioserver property_socket:sock_file { write };
 allow audioserver init:unix_stream_socket { connectto };
 allow audioserver system_prop:property_service { set };
+
+allow hal_audio_default property_socket:sock_file { write };
+allow hal_audio_default init:unix_stream_socket { connectto };
+allow hal_audio_default system_prop:property_service { set };
