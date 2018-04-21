@@ -325,6 +325,11 @@ void HDListen::callback(string name, string val){
 	
 	if (prop[0] == '1' && nocb != true){
 		mCB = android::hardware::broadcastradio::V1_1::ITunerCallback::castFrom(cb).withDefault(nullptr);
+		if (mCB == nullptr){
+			nocb = true;
+			LOGD("mCB is nullptr");
+			return;
+		}
 		if (strcmp(name.c_str(), "seek") == 0){
 			fm = (strstr(val.c_str(), "FM") != NULL);
 			freq = (int)(atof(val.c_str()) * (fm?100:1));
