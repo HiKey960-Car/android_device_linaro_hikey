@@ -39,9 +39,10 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
 	device/linaro/hikey/hifi/firmware/hifi-hikey960.img:$(TARGET_COPY_OUT_VENDOR)/firmware/hifi/hifi.img
 
-
+ifeq ($(TARGET_PRODUCT),hikey960)
 # Build HiKey960 HDMI audio HAL. Experimental only may not work. FIXME
 PRODUCT_PACKAGES += audio.primary.hikey960
+endif
 
 PRODUCT_PACKAGES += gralloc.hikey960
 

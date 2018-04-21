@@ -1,0 +1,13 @@
+type hal_broadcastradio_dmhd1000, domain;
+hal_server_domain(hal_broadcastradio_dmhd1000, hal_broadcastradio)
+
+type hal_broadcastradio_dmhd1000_exec, exec_type, vendor_file_type, file_type;
+init_daemon_domain(hal_broadcastradio_dmhd1000)
+
+allow hal_broadcastradio_dmhd1000 system_server:binder { call };
+allow hal_broadcastradio_dmhd1000 console_device:chr_file rw_file_perms;
+
+allow platform_app broadcastradio_service:service_manager { find };
+allow audioserver property_socket:sock_file { write };
+allow audioserver init:unix_stream_socket { connectto };
+allow audioserver system_prop:property_service { set };
