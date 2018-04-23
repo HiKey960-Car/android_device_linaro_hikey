@@ -314,13 +314,17 @@ int main(){
 				buf[bufidx+1] = 0; // null terminate the string
 				printf("%s", cmd);
 				if ((cmd = strstr(buf, "KEYDOWN")) > 0){
-					printf("Sending uinput key event DOWN: %d\n", cmd[8]);
+					__android_log_print(ANDROID_LOG_VERBOSE, "SWId", "Sending uinput key event DOWN: %d", cmd[8]);
+
+					// keycode 0x98 is "KEYCODE_COFFEE", normally mapped as an alternate "POWER" key. Use that as a REBOOT button.
+					if (cmd[8] == 0x98) system("/system/bin/reboot");
 					uinput_keyevt(cmd[8], DOWN);
 				} else if ((cmd = strstr(buf, "KEYUP")) > 0){
-					printf("Sending uinput key event UP: %d\n", cmd[6]);
+					__android_log_print(ANDROID_LOG_VERBOSE, "SWId", "Sending uinput key event UP: %d\n", cmd[6]);
 					uinput_keyevt(cmd[6], UP);
 				} else if ((cmd = strstr(buf, "PINPUT")) > 0){
 					write(key_fd, buf, strlen(buf));
+					__android_log_print(ANDROID_LOG_VERBOSE, "SWId", "%s", cmd);
 					// There are 6 (usable) analog inputs and 13 digital.
 					// Each analog input takes 2 bytes.
 					// Each digital input takes 1 bit.
