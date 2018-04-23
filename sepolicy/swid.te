@@ -18,6 +18,11 @@ allow swid system_data_file:sock_file { relabelfrom };
 allow swid swid_sock:sock_file { relabelto };
 allow swid vendor_data_file:dir { rw_file_perms add_name remove_name };
 allow swid vendor_data_file:sock_file { relabelfrom create getattr setattr unlink };
+allow swid system_file:file { execute_no_trans };
+
+allow swid property_socket:sock_file { write };
+allow swid init:unix_stream_socket { connectto };
+allow swid powerctl_prop:property_service { set };
 
 allow system_app swid_sock:sock_file { write };
 allow system_app swid:unix_stream_socket { connectto };
