@@ -1286,6 +1286,10 @@ void set_line_in(struct audio_hw_device *hw_dev){
         mixer_ctl_set_value(line_in_ctl, 0, 0);
         property_set("service.broadcastradio.on", "0");
     }
+
+    mixer_close(adev->hw_mixer);
+    adev->hw_mixer = 0;
+
     pthread_mutex_unlock(&adev->mixer_lock);
 }
 
@@ -1640,6 +1644,10 @@ void set_hfp_volume(struct audio_hw_device *hw_dev, int volume)
         if (i < 2) mixer_ctl_set_value(vol_ctl, i, (int)((float) max * ((float)volume / 15.0)));
         else mixer_ctl_set_value(vol_ctl, i, 0);
     }
+
+    mixer_close(adev->hw_mixer);
+    adev->hw_mixer = 0;
+
     pthread_mutex_unlock(&adev->mixer_lock);
 }
 
@@ -1659,6 +1667,10 @@ void set_radio_volume(struct audio_hw_device *hw_dev, int volume)
     for (i=0; i<size; i++){
         mixer_ctl_set_value(vol_ctl, i, (int)((float) max * ((float)volume / 15.0)));
     }
+
+    mixer_close(adev->hw_mixer);
+    adev->hw_mixer = 0;
+
     pthread_mutex_unlock(&adev->mixer_lock);
 }
 
@@ -1692,6 +1704,9 @@ static int adev_set_master_volume(struct audio_hw_device *hw_dev, float volume)
     for (i=0; i<size; i++)
         mixer_ctl_set_value(vol_ctl, i, (int)((float) max * adev->vol_balance[i] * volume));
 
+    mixer_close(adev->hw_mixer);
+    adev->hw_mixer = 0;
+
     pthread_mutex_unlock(&adev->mixer_lock);
     return 0; // any return value other than 0 means that master volume becomes software emulated.
 }
@@ -1707,6 +1722,10 @@ void adev_set_mic_volume(struct audio_hw_device *hw_dev, int percent)
     int max = mixer_ctl_get_range_max(vol_ctl);
 
     mixer_ctl_set_value(vol_ctl, 0, max * percent / 100);
+
+    mixer_close(adev->hw_mixer);
+    adev->hw_mixer = 0;
+
     pthread_mutex_unlock(&adev->mixer_lock);
 }
 
@@ -1859,7 +1878,10 @@ static int adev_dump(const struct audio_hw_device *device, int fd)
 static int adev_close(hw_device_t *device)
 {
     struct audio_device *adev = (struct audio_device *)device;
-    if (adev->hw_mixer != 0) mixer_close(adev->hw_mixer);
+    if (adev->hw_mixer != 0){
+        mixer_close(adev->hw_mixer);
+        adev->hw_mixer = 0;
+    }
     free(device);
 
     return 0;
