@@ -192,7 +192,8 @@ CDatabase::STATE_t CMyDatabase::Commit(bool bClear)
 					loc.flags |= GPS_LOCATION_HAS_BEARING;
 				if (varO[DATA_SPEED_KNOTS].Get(loc.speed))
 				{
-					loc.speed *= (U4) (1.852 / 3.6); // 1 knots -> 1.852km / hr -> 1.852 * 1000 / 3600 m/s
+					LOGV("HAS SPEED (kts): %f", loc.speed);
+					loc.speed *= (1.852 / 3.6); // 1 knots -> 1.852km / hr -> 1.852 * 1000 / 3600 m/s
 					loc.flags |= GPS_LOCATION_HAS_SPEED;
 				}
 			}
@@ -200,14 +201,16 @@ CDatabase::STATE_t CMyDatabase::Commit(bool bClear)
             TIMESTAMP ts;
 			memset(&ts, 0, sizeof(ts));
 			varO[DATA_UTC_TIMESTAMP].Get(ts);
-            LOGGPS(0x00000002, "%04d%02d%02d%02d%02d%06.3f,%10.6f,%11.6f,%d #position(time_stamp,lat,lon,ttff)", 
+            LOGGPS(0x00000002, "%04d%02d%02d%02d%02d%06.3f,%10.6f,%11.6f,%d,0x%X,%f,%f #position(time_stamp,lat,lon,ttff,flags,speed,bearing)", 
 						ts.wYear, ts.wMonth, ts.wDay, ts.wHour, ts.wMinute, 1e-6*ts.lMicroseconds, 
-						loc.latitude, loc.longitude, 0/* todo need to write a ttff*/);
+						loc.latitude, loc.longitude, 0/* todo need to write a ttff*/,
+						loc.flags, loc.speed, loc.bearing);
 			loc.timestamp = GetGpsUtcTime();
 			if ((loc.flags != 0) && (m_publishCount > 0))
             {
              	CGpsIf::getInstance()->m_callbacks.location_cb(&loc);
             }
+
         }
     
         if (CGpsIf::getInstance()->m_callbacks.sv_status_cb) 

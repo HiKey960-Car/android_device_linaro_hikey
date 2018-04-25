@@ -29,6 +29,8 @@
 #include "database.h"
 #include "gpsconst.h"
 
+#include <android/log.h>
+
 //lint -e585
 
 CDatabase::CDatabase(void)
@@ -279,40 +281,34 @@ void CDatabase::CompletePosition(void)
 	}
 }
 
-void CDatabase::CompleteVelocity(void)
-{
+void CDatabase::CompleteVelocity(void){
 	double X,Y,Long;
-	if (varN[DATA_UBX_VELOCITY_ECEF_VX].Get(X) && 
-		varN[DATA_UBX_VELOCITY_ECEF_VY].Get(Y) && 
-		varN[DATA_LONGITUDE_DEGREES].Get(Long))
-	{
+	if (varN[DATA_UBX_VELOCITY_ECEF_VX].Get(X) && varN[DATA_UBX_VELOCITY_ECEF_VY].Get(Y) && varN[DATA_LONGITUDE_DEGREES].Get(Long)){
 		Long *= RADIANS_PER_DEGREE;
 		double sinL = sin(Long);
 		double cosL = cos(Long);
 		double ve = - X * sinL + Y * cosL;
 		double Z,Lat; 
-		if (varN[DATA_UBX_VELOCITY_ECEF_VZ].Get(Z) && 
-			varN[DATA_LATITUDE_DEGREES].Get(Lat))
-		{
+		if (varN[DATA_UBX_VELOCITY_ECEF_VZ].Get(Z) && varN[DATA_LATITUDE_DEGREES].Get(Lat)){
+			__android_log_print(ANDROID_LOG_DEBUG, "u-blox", "CompleteVelocity: X: %f, Y: %f, Z: %f, Lat: %f, Lon: %f", X, Y, Z, Lat, Long);
 			Lat *= RADIANS_PER_DEGREE;
 			double sinF = sin(Lat);
 			double cosF = cos(Lat);
 			double vn = - X * sinF * cosL - Y * sinF * sinL + Z * cosF;
-			//double vd = - X * cosF * cosL - Y * cosF * sinL - Z * sinF;
 			double speed2 = vn*vn + ve*ve;
-			if (varN[DATA_SPEED_KNOTS].IsEmpty())
-			{
-				double speed = sqrt(speed2);
-				varN[DATA_SPEED_KNOTS].Set(speed / METERS_PER_NAUTICAL_MILE);
-			}
 
-			if (varN[DATA_TRUE_HEADING_DEGREES].IsEmpty() && (speed2 > (1.0*1.0)))
-			{
+			double speed = sqrt(speed2); // speed is in m/s
+			__android_log_print(ANDROID_LOG_DEBUG, "u-blox", "CompleteVelocity: Speed (kts) = %f", speed * 3600.0 / METERS_PER_NAUTICAL_MILE);
+			varN[DATA_SPEED_KNOTS].Set(speed * 3600.0 / METERS_PER_NAUTICAL_MILE);
+
+			if (speed2 > (1.0*1.0)) {
 				double cog = atan2(ve, vn);
+				__android_log_print(ANDROID_LOG_DEBUG, "u-blox", "CompleteVelocity: Heading = %f", cog * DEGREES_PER_RADIAN);
 				varN[DATA_TRUE_HEADING_DEGREES].Set(cog * DEGREES_PER_RADIAN);
-			}
-			else
+			} else {
+				__android_log_print(ANDROID_LOG_DEBUG, "u-blox", "CompleteVelocity: Speed < 1.0, setting heading to 0.0");
 				varN[DATA_TRUE_HEADING_DEGREES].Set(0.0);
+			}
 		}
 	}
 }
