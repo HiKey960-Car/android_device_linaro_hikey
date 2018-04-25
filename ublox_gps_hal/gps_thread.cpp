@@ -31,6 +31,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 
 #include <sys/time.h>
@@ -581,6 +582,7 @@ void ubx_thread(void *pThreadData)
 				    int iMsg;
 					unsigned char* pMsg;
 				    CProtocol* pProtocol;
+			char nmeastr[CProtocolNMEA::NMEA_MAX_SIZE+3];
 
                     // we read it so update the size
                     parser.Append(iSize);
@@ -595,7 +597,7 @@ void ubx_thread(void *pThreadData)
 						if (pProtocol == &protocolUBX)
 						{
 					        timeoutLastValidMessage = now;
-                            //LOGV("MSG UBX %02X-%02X-%02X-%02X-%02X-%02X (size %d)\n", pMsg[2], pMsg[3], pMsg[4], pMsg[5], pMsg[6], pMsg[7], iMsg);
+                            LOGV("MSG UBX %02X-%02X-%02X-%02X-%02X-%02X (size %d)\n", pMsg[2], pMsg[3], pMsg[4], pMsg[5], pMsg[6], pMsg[7], iMsg);
                             pUbxGps->lock();
 							pUbxGps->onNewUbxMsg(pState->gpsState, pMsg, (unsigned int) iMsg);
 							pUbxGps->unlock();
@@ -603,8 +605,10 @@ void ubx_thread(void *pThreadData)
                         else if (pProtocol == &protocolNmea)
 						{
 							timeoutLastValidMessage = now;
-#if 0
-#if (PLATFORM_SDK_VERSION > 8 /* >2.2 */)
+// TODO Fix... The NMEA callback crashes here.
+// Abort message: 'HidlSupport.cpp:263] Check failed: data[size] == '\0' '
+// String needs to be null terminated!
+
                             if ((CGpsIf::getInstance()->m_callbacks.nmea_cb) && 
                                 (getMonotonicMsCounter() >= pDatabase->getNextReportEpoch()))
                             {
@@ -616,11 +620,12 @@ void ubx_thread(void *pThreadData)
  #else   
                                 GpsUtcTime gpsUtcTime = pDatabase->GetGpsUtcTime();
  #endif  
-                                CGpsIf::getInstance()->m_callbacks.nmea_cb(gpsUtcTime, (const char*)pMsg, iMsg);
+				strncpy(nmeastr, (const char*)pMsg, iMsg);
+				nmeastr[iMsg] = 0;
+                                CGpsIf::getInstance()->m_callbacks.nmea_cb(gpsUtcTime, (const char*)nmeastr, iMsg);
                             }
-#endif
-#endif
-                            //LOGV("MSG %*.*s\n", iMsg-2, iMsg-2, pMsg);
+
+                            LOGV("NMEA %d: %s", iMsg, nmeastr);
 						}
                         else 
 						{
