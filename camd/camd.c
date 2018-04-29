@@ -108,15 +108,19 @@ int main(){
 	char front_path[PROP_VALUE_MAX];
 	char front_params[PROP_VALUE_MAX];
 	char front_sub[PROP_VALUE_MAX];
+	char front_extra[2*PROP_VALUE_MAX];
 	char rear_path[PROP_VALUE_MAX];
 	char rear_params[PROP_VALUE_MAX];
 	char rear_sub[PROP_VALUE_MAX];
+	char rear_extra[2*PROP_VALUE_MAX];
 	char left_path[PROP_VALUE_MAX];
 	char left_params[PROP_VALUE_MAX];
 	char left_sub[PROP_VALUE_MAX];
+	char left_extra[2*PROP_VALUE_MAX];
 	char right_path[PROP_VALUE_MAX];
 	char right_params[PROP_VALUE_MAX];
 	char right_sub[PROP_VALUE_MAX];
+	char right_extra[2*PROP_VALUE_MAX];
 	char audio_path[PROP_VALUE_MAX];
 
 	char front_dev[32];
@@ -124,6 +128,9 @@ int main(){
 	char left_dev[32];
 	char right_dev[32];
 	char audio_dev[32];
+
+	char *pt;
+	char extra[PROP_VALUE_MAX];
 
 	int fsubc, bsubc, lsubc, rsubc;
 
@@ -170,15 +177,19 @@ int main(){
 	property_get("persist.dashcam.front.path", front_path, "");
 	property_get("persist.dashcam.front.params", front_params, "");
 	property_get("persist.dashcam.front.sub", front_sub, "0");
+	property_get("persist.dashcam.front.extra", front_extra, "");
 	property_get("persist.dashcam.rear.path", rear_path, "");
 	property_get("persist.dashcam.rear.params", rear_params, "");
 	property_get("persist.dashcam.rear.sub", rear_sub, "0");
+	property_get("persist.dashcam.rear.extra", rear_extra, "");
 	property_get("persist.dashcam.left.path", left_path, "");
 	property_get("persist.dashcam.left.params", left_params, "");
 	property_get("persist.dashcam.left.sub", left_sub, "0");
+	property_get("persist.dashcam.left.extra", left_extra, "");
 	property_get("persist.dashcam.right.path", right_path, "");
 	property_get("persist.dashcam.right.params", right_params, "");
 	property_get("persist.dashcam.right.sub", right_sub, "0");
+	property_get("persist.dashcam.right.extra", right_extra, "");
 	property_get("persist.dashcam.audio.path", audio_path, "");
 
 	if (access("/oem", W_OK) < 0){
@@ -212,21 +223,65 @@ int main(){
 
 			if (strlen(front_path) > 1 && strstr(target, front_path) != NULL){
 				if (fsubc == atoi(front_sub)) strcpy(front_dev, namelist[n]->d_name);
+				if (strlen(front_extra) > 1){
+					while ((pt = strstr(front_extra, "$")) != 0){
+						strcpy(extra, &pt[1]);
+						pt[0] = 0;
+						strcat(front_extra, "/dev/");
+						strcat(front_extra, namelist[n]->d_name);
+						strcat(front_extra, extra);
+						__android_log_print(ANDROID_LOG_DEBUG, "CAMd", "Modified FRONT extra command: %s", front_extra);
+					}
+					system(front_extra);
+				}
 				fsubc++;
 			}
 
 			if (strlen(rear_path) > 1 && strstr(target, rear_path) != NULL){
 				if (bsubc == atoi(rear_sub)) strcpy(rear_dev, namelist[n]->d_name);
+				if (strlen(rear_extra) > 1){
+					while ((pt = strstr(rear_extra, "$")) != 0){
+						strcpy(extra, &pt[1]);
+						pt[0] = 0;
+						strcat(rear_extra, "/dev/");
+						strcat(rear_extra, namelist[n]->d_name);
+						strcat(rear_extra, extra);
+						__android_log_print(ANDROID_LOG_DEBUG, "CAMd", "Modified REAR extra command: %s", rear_extra);
+					}
+					system(rear_extra);
+				}
 				bsubc++;
 			}
 
 			if (strlen(left_path) > 1 && strstr(target, left_path) != NULL){
 				if (lsubc == atoi(left_sub)) strcpy(left_dev, namelist[n]->d_name);
+				if (strlen(left_extra) > 1){
+					while ((pt = strstr(left_extra, "$")) != 0){
+						strcpy(extra, &pt[1]);
+						pt[0] = 0;
+						strcat(left_extra, "/dev/");
+						strcat(left_extra, namelist[n]->d_name);
+						strcat(left_extra, extra);
+						__android_log_print(ANDROID_LOG_DEBUG, "CAMd", "Modified LEFT extra command: %s", left_extra);
+					}
+					system(left_extra);
+				}
 				lsubc++;
 			}
 
 			if (strlen(right_path) > 1 && strstr(target, right_path) != NULL){
 				if (rsubc == atoi(right_sub)) strcpy(right_dev, namelist[n]->d_name);
+				if (strlen(right_extra) > 1){
+					while ((pt = strstr(right_extra, "$")) != 0){
+						strcpy(extra, &pt[1]);
+						pt[0] = 0;
+						strcat(right_extra, "/dev/");
+						strcat(right_extra, namelist[n]->d_name);
+						strcat(right_extra, extra);
+						__android_log_print(ANDROID_LOG_DEBUG, "CAMd", "Modified RIGHT extra command: %s", right_extra);
+					}
+					system(right_extra);
+				}
 				rsubc++;
 			}
 			free(namelist[n]);
